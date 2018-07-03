@@ -9,12 +9,7 @@ var tools = require('./public/tools')
 
 var app = express()
 
-app.use(fileUpload({
-  limits: {
-    files: 3,
-    fileSize: 3 * 1024
-  }
-}))
+app.use(fileUpload())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.urlencoded({ extended: false }))
 
