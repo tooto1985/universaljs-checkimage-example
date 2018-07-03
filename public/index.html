@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+  <script>
+    $(() => {
+      $(":file").change(function () {
+        var ary = [].slice.call(this.files)
+        if (ary.length <= 3) {
+          if (ary.every(a => a.size < (1024 * 3))) {
+            var p = []
+            for (var i = 0; i < ary.length; i++) {
+              p.push(new Promise((resolve, reject) => {
+                var img = new Image()
+                img.onload = function () {
+                  resolve({ width: this.width, height: this.height })
+                }
+                img.onerror = e => {
+                  reject(e.type)
+                }
+                img.src = URL.createObjectURL(ary[i])
+              }))
+            }
+            Promise.all(p).then(result => {
+              if (result.every(a => a.width <= 30 && a.height <= 30)) {
+                alert('通過')
+              } else {
+                alert('尺寸超過30x30像素')
+              }
+            }, error => {
+              console.log(error)
+            })
+          } else {
+            alert('檔案超過3kb')
+          }
+        } else {
+          alert('超過3張照片')
+        }
+      })
+    })
+  </script>
+</head>
+
+<body>
+  <form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" multiple name="upf">
+    <ul>
+      <li>最多選取3張照片</li>
+      <li>每張最大3KB</li>
+      <li>尺寸最大30x30像素</li>
+    </ul>
+    <input type="submit" value="上傳">
+  </form>
+</body>
+
+</html>
