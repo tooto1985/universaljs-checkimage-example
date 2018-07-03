@@ -7,40 +7,35 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+  <script src='tools.js'></script>
   <script>
     $(() => {
       $(":file").change(function () {
+        var p = []
         var ary = [].slice.call(this.files)
-        if (ary.length <= 3) {
-          if (ary.every(a => a.size < (1024 * 3))) {
-            var p = []
-            for (var i = 0; i < ary.length; i++) {
-              p.push(new Promise((resolve, reject) => {
-                var img = new Image()
-                img.onload = function () {
-                  resolve({ width: this.width, height: this.height })
-                }
-                img.onerror = e => {
-                  reject(e.type)
-                }
-                img.src = URL.createObjectURL(ary[i])
-              }))
-            }
-            Promise.all(p).then(result => {
-              if (result.every(a => a.width <= 30 && a.height <= 30)) {
-                alert('通過')
-              } else {
-                alert('尺寸超過30x30像素')
+        for (var i = 0; i < ary.length; i++) {
+          p.push(new Promise((resolve, reject) => {
+            var img = new Image();
+            ((i) => {
+              img.onload = function () {
+                resolve({ width: this.width, height: this.height, size: ary[i].size })
               }
-            }, error => {
-              console.log(error)
-            })
-          } else {
-            alert('檔案超過3kb')
-          }
-        } else {
-          alert('超過3張照片')
+            })(i)
+            img.onerror = e => {
+              reject(e.type)
+            }
+            img.src = URL.createObjectURL(ary[i])
+          }))
         }
+        Promise.all(p).then(result => {
+          try {
+            tools.checkImage(result)
+          } catch(e) {
+            alert(e.message)
+          }
+        }, error => {
+          console.log(error)
+        })
       })
     })
   </script>
